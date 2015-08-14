@@ -26,7 +26,7 @@ public @interface PersistenceAnnotation4Method {
 	//  并且要自行在数据定义好序列
 	String sequenceName() default ""; 
 	
-	boolean isDateField() default false;  //标记 model 类属性是 Date 类型
+//	boolean isDateField() default false;  //标记 model 类属性是 Date 类型
 	//   yyyy-mm-dd hh24:mi:ss 或者 yyyy-mm-dd 获取其他的，默认为yyyy-mm-dd格式的时间
 	String dateFormat() default "yyyy-mm-dd";  // 日期的类型
 //	String date = "yyyy-mm-dd";

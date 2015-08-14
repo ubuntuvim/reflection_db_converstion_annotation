@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 
 /**
- * 在 model 类上使用，标注与数据库关联的数据表的名字
+ * 在 model 类上使用，标注与数据库关联的数据表的名字、以及数据表名称
  * @author ubuntuvim
  * @Email 1527254027@qq.com
  * @2015年7月26日 下午1:09:01

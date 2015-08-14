@@ -59,11 +59,7 @@ public class CoreDao<T> {
 	 * @param sql 查询的sql
 	 * @param obj 查询的sql参数
 	 * @return 匹配的数据list
-	 * @throws SQLException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
-	 * @throws SecurityException 
-	 * @throws NoSuchFieldException 
+	 * @throws SQLException | IllegalAccessException | InstantiationException | SecurityException | NoSuchFieldException 
 	 */
 	public List<T> findBySql(String sql, Object[] params) throws SQLException, InstantiationException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		List<T> list = new ArrayList<T>();
@@ -92,29 +88,26 @@ public class CoreDao<T> {
 				String colsName = metaData.getColumnName(i + 1);
 				Object colsValue = resultSet.getObject(colsName);
 
-				// 返回一个 Field 对象，该对象反映此 Class 对象所表示的类或接口的指定已声明字段。
+				// 根据字段名称得到实体类属性
 				Field field = clazz.getDeclaredField(colsName.toLowerCase());
-				//  有注解
-				if (field.isAnnotationPresent(PersistenceAnnotation4Method.class)) {
-					//  获取 model 类上的注解
-					PersistenceAnnotation4Cls an1 = clazz.getAnnotation(PersistenceAnnotation4Cls.class);
-					//  如果是 Oracle 数据库需要做类型的转换；MySQL 不需要
-					if (an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
-						if (null != colsValue) {
-							//  在oracle 字段设置的类型是 number，但是这里得到的是 java.math.BigDecimal
-							if ("BigDecimal".equals(colsValue.getClass().getSimpleName())) {
-								BigDecimal db = (BigDecimal) colsValue;
-								colsValue = db.intValue();  // Converts to int
-							}
-							//  oracle的时间戳类型 class oracle.sql.TIMESTAMP 需要转换为普通java.util.Date
-							if ("TIMESTAMP".equals(colsValue.getClass().getSimpleName())) {
-								oracle.sql.TIMESTAMP ts = (TIMESTAMP) colsValue;
-								colsValue = ts.dateValue();
-							}
+				//  获取 model 类上的注解
+				PersistenceAnnotation4Cls an1 = clazz.getAnnotation(PersistenceAnnotation4Cls.class);
+				//  如果是 Oracle 数据库需要做类型的转换；MySQL 不需要
+				if (oracleDB(an1)) {
+					if (null != colsValue) {
+						//  在oracle 字段设置的类型是 number，但是这里得到的是 java.math.BigDecimal
+						if ("BigDecimal".equals(colsValue.getClass().getSimpleName())) {
+							BigDecimal db = (BigDecimal) colsValue;
+							colsValue = db.intValue();  // Converts to int
+						}
+						//  oracle的时间戳类型 class oracle.sql.TIMESTAMP 需要转换为普通java.util.Date
+						if ("TIMESTAMP".equals(colsValue.getClass().getSimpleName())) {
+							oracle.sql.TIMESTAMP ts = (TIMESTAMP) colsValue;
+							colsValue = ts.dateValue();
 						}
 					}
 				}
-				
+			
 				field.setAccessible(true);// 打开javabean的访问private权限
 				// 执行setter方法
 				field.set(newObj, colsValue);
@@ -126,6 +119,15 @@ public class CoreDao<T> {
 		DBConnUtils.closeConn(connection);
 		
 		return list;
+	}
+
+	/**
+	 * 是否是 Oracle 数据库
+	 * @param an1
+	 * @return true-Oracle 数据库；false-其他数据库
+	 */
+	private boolean oracleDB(PersistenceAnnotation4Cls an1) {
+		return an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle);
 	}
 	
 	/**
@@ -158,7 +160,6 @@ public class CoreDao<T> {
 			}
 			System.out.println("\n");
 			log.info("执行SQL >>> " + sql);
-//        System.out.println(pstmt);
 			//  执行更新
 			result = pstmt.executeUpdate();
 			
@@ -167,6 +168,12 @@ public class CoreDao<T> {
 				connection.commit();
 			} catch (SQLException e) {
 				e.printStackTrace();
+				try {
+					//  出错回滚
+					connection.rollback();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}  //
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -176,11 +183,11 @@ public class CoreDao<T> {
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}  //
+		} finally {
+		//  执行完成，关闭数据库链接
+	        DBConnUtils.closeConn(connection);
 		}
           
-		//  执行完成，关闭数据库链接
-        DBConnUtils.closeConn(connection);
-        
         return result > 0;
     }
 	
@@ -265,7 +272,7 @@ public class CoreDao<T> {
 							log.info("字段【"+fieldName+"】是date【"+n.dateFormat()+"】 类型...");
 							String dateStr = sdf.format(mt.invoke(entity));
 							// MySQL 不需要特殊处理，但是 Oracle 要添加 SQL 函数
-							if (an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
+							if (oracleDB(an1)) {
 								fieldStr += (fieldName + ",");
 								qm = makeDateFormat(qm, n);
 								params.add(dateStr);
@@ -389,7 +396,7 @@ public class CoreDao<T> {
 							String dateStr = sdf.format(mt.invoke(entity));
 							log.info("字段【"+fieldName+"】是date【"+n.dateFormat()+"】 类型，字段值为【"+dateStr+"】");
 							// MySQL 不需要特殊处理，但是 Oracle 要添加 SQL 函数
-							if (an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
+							if (oracleDB(an1)) {
 								fieldStr = makeFieldName(fieldStr, fieldName);
 								qm = makeDateFormat(qm, n);  //  特殊处理oracle的时间格式
 								params.add(dateStr);
@@ -452,7 +459,7 @@ public class CoreDao<T> {
 		}
 		
 		//  update tableName( set 
-		if (an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
+		if (oracleDB(an1)) {
 			//  Oracle 数据组装成update "tableName"( set
 			sb.append("update \"").append(tableName).append("\" set ");
 		} else {
@@ -491,7 +498,7 @@ public class CoreDao<T> {
 							dateFormat = n.dateFormat();
 							log.info("字段【"+fieldName+"】是date【"+n.dateFormat()+"】 类型，字段值为【"+dateValue+"】");
 							// MySQL 不需要特殊处理，但是 Oracle 要添加 SQL 函数
-							if (an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
+							if (oracleDB(an1)) {
 								//  特殊处理oracle的时间格式
 								if (n.dateFormat().contains("HH:mm:ss")) {   // 如果model类定义的是获取时分秒的时间，
 									dateFormat = "yyyy-MM-dd HH24:mi:ss";
@@ -531,7 +538,7 @@ public class CoreDao<T> {
 			Set<String> tableFieldName = whereConditionMap.keySet(); //得到key，就是字段名称
 			for (String f : tableFieldName) {
 //				wc = " where " + f + " = " + whereConditionMap.get(f);
-				if (an1.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
+				if (oracleDB(an1)) {
 					wc += " and " + "\"" + f + "\" = ?,";
 				} else {
 					wc += " and " + f + " = ?,";
@@ -554,7 +561,7 @@ public class CoreDao<T> {
 			List<Object> params, Method mt, String fieldName, PersistenceAnnotation4Cls n)
 			throws IllegalAccessException, InvocationTargetException {
 			
-		if (n.dbType().equals(PersistenceAnnotation4Cls.DBType.oracle)) {
+		if (oracleDB(n)) {
 			fieldStr += ("\"" + fieldName + "\" = " + "?,");  //  "fieldName" = ?, "fieldName2" = ?,
 		} else {
 			fieldStr += (fieldName + " = " + "?,");  //  fieldName = ?, fieldName2 = ?,
