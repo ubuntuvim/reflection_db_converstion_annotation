@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import com.ubuntuvim.annotation.PersistenceAnnotation4Cls;
 import com.ubuntuvim.annotation.PersistenceAnnotation4Method;
-import com.ubuntuvim.util.Utils;
 import com.ubuntuvim.utils.DBConnUtils;
+import com.ubuntuvim.utils.Utils;
 
 /**
  * 使用要求实体类（model）中的属性名一定要和数据库中的字段名一定要严格相同（包括大小写）,
