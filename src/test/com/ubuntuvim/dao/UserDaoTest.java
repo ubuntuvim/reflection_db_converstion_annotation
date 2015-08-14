@@ -46,7 +46,7 @@ public class UserDaoTest {
 	public void testUpdateBySql() {
 		//  更新 id为33的数据
 		String sql = "update user set username = ? where id = ?";
-		Object[] params = { "testUpdate", 33 };
+		Object[] params = { "testUpdate3", 33 };
 		if (userDao.updateBySql(sql, params)) 
 			System.out.println("更新成功......");
 		else 
@@ -58,7 +58,7 @@ public class UserDaoTest {
 		User u = new User();
 		u.setBirth(new Date());
 		u.setDetail_time(new Date());
-		u.setUsername("addtest");
+		u.setUsername("addtest111");
 		try {
 			if (userDao.insertObj(u))
 				System.out.println(" 插入成功....");
@@ -73,8 +73,33 @@ public class UserDaoTest {
 	}
 
 	@Test
-	public void testInsertObjCompStr() {
-		//  此方法是针对 Oracle 数据库设置的。Oracle 数据库组装的 SQL 需要双引号
+	public void testDeleteBySql() {
+		String sql = "delete from user where id = ?";
+		Object[] params = { 36 };
+		if (userDao.delete(sql, params))
+			System.out.println("删除成功....");
+		else 
+			System.out.println("删除失败。。。。"); 
+	}
+	
+	@Test
+	public void testDeleteByObj() {
+		try {
+			User u = new User();
+			u.setId(37);
+			u.setBirth(new Date());
+			u.setDetail_time(new Date());
+			u.setUsername("addtest111");
+			
+			if (userDao.delete(u))
+				System.out.println("删除成功....");
+			else 
+				System.out.println("数据不存在，删除失败。。。。");
+		} catch (NoSuchMethodException | SecurityException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			e.printStackTrace();
+		} 
 	}
 
 	@Test
@@ -84,7 +109,7 @@ public class UserDaoTest {
 		u.setUsername("update second time...");
 		//  设置更新的字段和对应的值
 		HashMap<String, Object> whereConditionMap = new HashMap<String, Object>();
-		whereConditionMap.put("id", 33);  //更新 id 为33的记录
+		whereConditionMap.put("id", 37);  //更新 id 为37的记录
 		try {
 			if (userDao.updateObj(u, whereConditionMap)) 
 				System.out.println("更新成功......");

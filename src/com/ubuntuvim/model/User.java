@@ -19,8 +19,11 @@ public class User {
 	
 	@PersistenceAnnotation4Method(dateFormat="yyyy-MM-dd", fieldType=FieldType.dateType)
 	private Date birth;
+	
 	@PersistenceAnnotation4Method(dateFormat="yyyy-MM-dd HH:mm:ss", fieldType=FieldType.dateType)
 	private Date detail_time;
+	
+//	@PersistenceAnnotation4Method(noPersistenField=true)
 	private String noPersistence;
 	
 	@PersistenceAnnotation4Method(primaryKeyType=PrimaryKeyType.autoInc, isPrimaryKey=true)
@@ -32,7 +35,7 @@ public class User {
 		this.id = id;
 	}
 
-	@PersistenceAnnotation4Method(noPersistenField=false)
+	@PersistenceAnnotation4Method(noPersistenField=true)
 	public String getNoPersistence() {
 		return noPersistence;
 	}
@@ -49,6 +52,7 @@ public class User {
 		this.username = username;
 	}
 	
+	@PersistenceAnnotation4Method(dateFormat="yyyy-MM-dd", fieldType=FieldType.dateType)
 	public Date getBirth() {
 		return birth;
 	}
@@ -57,6 +61,7 @@ public class User {
 		this.birth = birth;
 	}
 
+	@PersistenceAnnotation4Method(dateFormat="yyyy-MM-dd HH:mm:ss", fieldType=FieldType.dateType)
 	public Date getDetail_time() {
 		return detail_time;
 	}

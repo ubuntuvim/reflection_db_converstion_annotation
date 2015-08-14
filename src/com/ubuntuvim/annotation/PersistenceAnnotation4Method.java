@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Documented
 public @interface PersistenceAnnotation4Method {
 	
-	boolean noPersistenField() default true;  // 标记 model 类的属性不持久化到数据库
+	boolean noPersistenField() default false;  // 标记 model 类的属性不持久化到数据库
 	
 	boolean isPrimaryKey() default false;  //标记方法是主键的 get 方法，默认为否
 
