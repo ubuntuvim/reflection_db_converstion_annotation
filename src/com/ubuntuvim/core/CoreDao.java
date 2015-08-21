@@ -192,6 +192,9 @@ public class CoreDao<T> {
 			throws NoSuchMethodException, SecurityException, IllegalAccessException, 
 			IllegalArgumentException, InvocationTargetException, SQLException {
 
+
+		checkObjIsNull(entity, "插入的对象不能为 null ！！");
+		
 		String fieldStr = "";
 		String qm = "";
 		StringBuffer sb = new StringBuffer();
@@ -328,6 +331,8 @@ public class CoreDao<T> {
 			InvocationTargetException, 
 			SQLException {
 
+		checkObjIsNull(entity, "不允许更新为 null 的对象！！");
+		
 //		System.out.println("entity = " + entity);
 		
 		String fieldStr = "";
@@ -447,6 +452,9 @@ public class CoreDao<T> {
 	 * @return true-删除成功；false-删除失败
 	 */
 	public boolean delete(T entity) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		
+		checkObjIsNull(entity, "删除的对象不能为 null ！！");
+			
 		//  首先获取主键字段，根据主键删除
 		Method mt = null;
 		PersistenceAnnotation4Method annotation4Method = null;
@@ -475,18 +483,22 @@ public class CoreDao<T> {
 							.append("\" where \"")
 							.append(fields[i].getName())
 							.append("\" = ")
-							.append(mt.invoke(entity));
+							.append("?");
 						} else {
 							sql.append("delete from ")
 							.append(annotation4Cls.tableName())
 							.append(" where ")
 							.append(fields[i].getName())
 							.append(" = ")
-							.append(mt.invoke(entity));
+							.append("?");
 						}
 						
 					} else {
-						log.info("请指定主键的值，否则无法执行删除操作！");
+						try {
+							throw new Exception("请指定主键的值，否则无法执行删除操作！");
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 					
 					break;
@@ -497,12 +509,27 @@ public class CoreDao<T> {
 		}
 		if (usePrimaryAnnotaction) {
 			//  执行删除
-			return this.updateBySql(sql.toString(), null);
+			return this.updateBySql(sql.toString(), new Object[] { mt.invoke(entity) });
 		} else {
-			log.info("实体类【"+clazz+"】没有使用注解【PersistenceAnnotation4Method.isPrimaryKey】指定主键，"
-					+ "请使用方法delete(String sql, Object[] params)手动指定删除条件进行删除操作！");
-			
+//			log.error("实体类【"+clazz+"】没有使用注解【PersistenceAnnotation4Method.isPrimaryKey】指定主键，"
+//					+ "请使用方法delete(String sql, Object[] params)手动指定删除条件进行删除操作！");
+			try {
+				throw new Exception("实体类【"+clazz+"】没有使用注解【PersistenceAnnotation4Method.isPrimaryKey】指定主键，"
+						+ "或者使用方法delete(String sql, Object[] params)手动指定删除条件进行删除操作！");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			return false;
+		}
+	}
+
+	private void checkObjIsNull(T entity, String errorMsg) {
+		if (null == entity) {
+			try {
+				throw new Exception(errorMsg);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

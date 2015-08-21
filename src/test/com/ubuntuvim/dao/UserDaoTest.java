@@ -71,6 +71,21 @@ public class UserDaoTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testInsertNullObj() {
+		try {
+			if (userDao.insertObj(null))
+				System.out.println(" 插入成功....");
+			else 
+				System.out.println("插入失败。。。。");
+				
+		} catch (NoSuchMethodException | SecurityException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
 	@Test
 	public void testDeleteBySql() {
@@ -86,12 +101,27 @@ public class UserDaoTest {
 	public void testDeleteByObj() {
 		try {
 			User u = new User();
-			u.setId(37);
+			u.setId(38);
 			u.setBirth(new Date());
 			u.setDetail_time(new Date());
 			u.setUsername("addtest111");
 			
 			if (userDao.delete(u))
+				System.out.println("删除成功....");
+			else 
+				System.out.println("数据不存在，删除失败。。。。");
+		} catch (NoSuchMethodException | SecurityException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException e) {
+			e.printStackTrace();
+		} 
+	}
+	
+	@Test
+	public void testDeleteByNullObj() {
+		try {
+			
+			if (userDao.delete(null))
 				System.out.println("删除成功....");
 			else 
 				System.out.println("数据不存在，删除失败。。。。");
@@ -121,5 +151,21 @@ public class UserDaoTest {
 			e.printStackTrace();
 		}
 	}
-
+	
+	@Test
+	public void testUpdateNullObj() {
+		//  设置更新的字段和对应的值
+		HashMap<String, Object> whereConditionMap = new HashMap<String, Object>();
+		whereConditionMap.put("id", 37);  //更新 id 为37的记录
+		try {
+			if (userDao.updateObj(null, whereConditionMap)) 
+				System.out.println("更新成功......");
+			else 
+				System.out.println(" 更新失败。。。。");
+		} catch (NoSuchMethodException | SecurityException
+				| IllegalAccessException | IllegalArgumentException
+				| InvocationTargetException | SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }
